@@ -123,16 +123,6 @@ class TwitterDataModule(pl.LightningDataModule):
         test_dataset = TensorDataset(test_x_input_ids, test_x_attention_mask, test_y)
         print('[ Tokenize Completed ]\n')
 
-        # print('[ Splitting Dataset ]')
-        # train_validation_size = int(0.8 * total_size)
-        # train_size = int(0.9 * train_validation_size)
-        # validation_size = train_validation_size - train_size
-        # test_size = total_size - train_validation_size
-
-        # train_validation_dataset, test_dataset = torch.utils.data.random_split(tensor_dataset, [train_validation_size, test_size], generator=torch.Generator().manual_seed(42))
-        # train_dataset, validation_dataset = torch.utils.data.random_split(train_validation_dataset, [train_size, validation_size], generator=torch.Generator().manual_seed(42))
-        # print('[ Split Completed ]\n')
-
         return train_dataset, valid_dataset, test_dataset
     
     # Function to clean and preprocess a single tweet text

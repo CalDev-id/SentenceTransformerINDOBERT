@@ -9,7 +9,7 @@ class Finetune(pl.LightningModule):
 
     def __init__(self, model, learning_rate=2e-5) -> None:
         # Inisialisasi kelas Finetune
-        super(FinetuneV1, self).__init__()
+        super(Finetune, self).__init__()
         self.model = model # Menggunakan model yang telah diinisialisasi
         self.lr = learning_rate # Menyimpan learning rate
 
