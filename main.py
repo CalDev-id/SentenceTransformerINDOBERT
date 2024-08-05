@@ -8,7 +8,7 @@ from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar, EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger, CSVLogger
 from utils.preprocessor import TwitterDataModule
-from models.finetune import Finetune, FinetuneWithCNNv1
+from models.finetune import Finetune
 from textwrap import dedent
 
 if __name__ == '__main__':
@@ -34,17 +34,11 @@ if __name__ == '__main__':
 
     # Load pre-trained tokenizer
     pretrained_tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
-    # Load pre-trained model for sequence classification
-    # pretrained_model = AutoModelForSequenceClassification.from_pretrained(model_name, output_attentions=False, output_hidden_states=False, num_labels=2)
-    # # Initialize fine-tuned model with specified learning rate
-    # model = Finetune(model=pretrained_model, learning_rate=learning_rate)
-    # # Initialize data module for Twitter data
-    # data_module = TwitterDataModule(tokenizer=pretrained_tokenizer, max_length=max_length, batch_size=batch_size, recreate=True, one_hot_label=True)
 
-    #cnn
-    pretrained_model = AutoModel.from_pretrained(model_name, output_attentions=False, output_hidden_states=True)
-    model = FinetuneWithCNNv1(model=pretrained_model, learning_rate=learning_rate)
-    data_module = TwitterDataModule(tokenizer=pretrained_tokenizer, max_length=max_length, batch_size=batch_size, recreate=True)
+    # Load pre-trained model for sequence classification
+    pretrained_model = AutoModelForSequenceClassification.from_pretrained(model_name, output_attentions=False, output_hidden_states=False, num_labels=2)
+    model = Finetune(model=pretrained_model, learning_rate=learning_rate)
+    data_module = TwitterDataModule(tokenizer=pretrained_tokenizer, max_length=max_length, batch_size=batch_size, recreate=True, one_hot_label=True)
 
     # Initialize callbacks and progressbar
     tensor_board_logger = TensorBoardLogger('tensorboard_logs', name=f'{model_name}/{batch_size}_{learning_rate}')
