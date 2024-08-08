@@ -148,8 +148,8 @@ class Finetune(pl.LightningModule):
 
     # Metode untuk langkah evaluasi bersama
     def _shared_eval_step(self, batch, batch_idx):
-        input_ids, attention_mask, targets = batch
-        loss, logits = self(input_ids=input_ids, attention_mask=attention_mask, labels=targets)
+        input_ids, attention_mask, token_type_ids = batch
+        loss, logits = self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
 
         true = torch.argmax(targets, dim=1).to(torch.device("cpu"))
         pred = torch.argmax(logits, dim=1).to(torch.device("cpu"))
