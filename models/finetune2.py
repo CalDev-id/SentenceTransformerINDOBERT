@@ -151,10 +151,10 @@ class Finetune(pl.LightningModule):
         input_ids, attention_mask, token_type_ids = batch
         loss, logits = self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
 
-        true = torch.argmax(targets, dim=1).to(torch.device("cpu"))
+        # true = torch.argmax(targets, dim=1).to(torch.device("cpu"))
         pred = torch.argmax(logits, dim=1).to(torch.device("cpu"))
 
-        return loss, true, pred
+        return loss, pred
 
     # Metode untuk langkah prediksi
     def predict_step(self, batch, batch_idx):
