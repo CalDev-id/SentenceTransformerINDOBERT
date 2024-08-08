@@ -22,10 +22,10 @@ class TwitterDataModule(pl.LightningDataModule):
         self.max_length = max_length
         self.batch_size = batch_size
         self.recreate = recreate
-        self.train_dataset_path = "../datasets/github/github_1.json"
-        self.validation_dataset_path = "../datasets/github/github_1.json"
-        self.test_dataset_path = "../datasets/github/github_1.json"
-        self.processed_dataset_path = "../datasets/twitter_label_manual_processed.csv"
+        self.train_dataset_path = "datasets/github/github_1.json"
+        self.validation_dataset_path = "datasets/github/github_1.json"
+        self.test_dataset_path = "datasets/github/github_1.json"
+        self.processed_dataset_path = "datasets/twitter_label_manual_processed.csv"
 
     def load_data(self):
         # Load dataset if exists, else preprocess and save
