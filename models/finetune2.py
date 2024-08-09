@@ -143,14 +143,13 @@
 import torch
 import pytorch_lightning as pl
 from torch import nn
-from torch.nn import functional as F
 
 class Finetune(pl.LightningModule):
     def __init__(self, model, learning_rate=2e-5) -> None:
         super(Finetune, self).__init__()
         self.model = model
         self.lr = learning_rate
-        self.criterion = nn.CrossEntropyLoss()  # Misalnya, jika ingin menghitung loss terhadap sesuatu
+        self.criterion = nn.CrossEntropyLoss()  # Loss function tetap disiapkan jika nanti diperlukan
 
     def forward(self, input_ids, attention_mask, token_type_ids):
         model_output = self.model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
@@ -164,9 +163,8 @@ class Finetune(pl.LightningModule):
         input_ids, attention_mask, token_type_ids = batch
         logits = self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
 
-        # Misalnya, jika tidak ada label, loss bisa diatur dengan dummy atau dilewati
-        # Dummy label untuk CrossEntropyLoss, hanya sebagai contoh
-        dummy_labels = torch.zeros_like(logits).long().to(logits.device)
+        # Dummy labels: pastikan mereka dalam format long (integer) dan sesuai dengan prediksi
+        dummy_labels = torch.zeros(logits.size(0), dtype=torch.long, device=logits.device)
         loss = self.criterion(logits, dummy_labels)
 
         metrics = {'train_loss': loss.item()}
@@ -177,8 +175,7 @@ class Finetune(pl.LightningModule):
         input_ids, attention_mask, token_type_ids = batch
         logits = self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
 
-        # Dummy label untuk CrossEntropyLoss
-        dummy_labels = torch.zeros_like(logits).long().to(logits.device)
+        dummy_labels = torch.zeros(logits.size(0), dtype=torch.long, device=logits.device)
         loss = self.criterion(logits, dummy_labels)
 
         return loss
@@ -192,8 +189,7 @@ class Finetune(pl.LightningModule):
         input_ids, attention_mask, token_type_ids = batch
         logits = self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
 
-        # Dummy label untuk CrossEntropyLoss
-        dummy_labels = torch.zeros_like(logits).long().to(logits.device)
+        dummy_labels = torch.zeros(logits.size(0), dtype=torch.long, device=logits.device)
         loss = self.criterion(logits, dummy_labels)
 
         return loss
@@ -208,4 +204,3 @@ class Finetune(pl.LightningModule):
         logits = self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
         pred = torch.argmax(logits, dim=1).to(torch.device("cpu"))
         return pred[0]
-
