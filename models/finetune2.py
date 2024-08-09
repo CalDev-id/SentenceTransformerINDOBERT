@@ -1,169 +1,131 @@
 # import torch
 # import pytorch_lightning as pl
 
+# from torch import nn
+# from torch.nn import functional as F
+# from sklearn.metrics import classification_report
+
 # class Finetune(pl.LightningModule):
 
 #     def __init__(self, model, learning_rate=2e-5) -> None:
+#         # Inisialisasi kelas Finetune
 #         super(Finetune, self).__init__()
-#         self.model = model  # Use the initialized model
-#         self.lr = learning_rate  # Store learning rate
+#         self.model = model # Menggunakan model yang telah diinisialisasi
+#         self.lr = learning_rate # Menyimpan learning rate
 
 #     def forward(self, input_ids, attention_mask, token_type_ids):
-#         # Forward method for forward pass
+#         # Metode forward untuk melakukan propagasi maju (forward pass)
 #         model_output = self.model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
 #         return model_output.logits
 
 #     def configure_optimizers(self):
-#         # Configure optimizers, using Adam optimizer in this case
+#         # Konfigurasi optimizers, dalam hal ini menggunakan Adam optimizer
 #         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
 #         return optimizer
 
+#     # Metode untuk langkah pelatihan
 #     def training_step(self, batch, batch_idx):
-#         # Training step method
 #         input_ids, attention_mask, token_type_ids = batch
-#         logits = self(input_ids, attention_mask, token_type_ids)
-#         return logits
+#         loss, logits = self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
 
+#         metrics = {}
+#         metrics['train_loss'] = loss.item() # Menyimpan loss pelatihan
+
+#         self.log_dict(metrics, prog_bar=False, on_epoch=True)
+
+#         return loss
+
+#     # Metode untuk langkah validasi
 #     def validation_step(self, batch, batch_idx):
-#         # Validation step method
-#         input_ids, attention_mask, token_type_ids = batch
-#         logits = self(input_ids, attention_mask, token_type_ids)
-#         return logits
+#         loss, true, pred = self._shared_eval_step(batch, batch_idx)
+#         return loss, true, pred
 
+#     # Metode untuk menyelesaikan epoch validasi
+#     def validation_epoch_end(self, validation_step_outputs):
+#         loss = torch.Tensor().to(device='cuda')
+#         true = []
+#         pred = []
+
+#         for output in validation_step_outputs:
+#             loss = torch.cat((loss, output[0].view(1)), dim=0)
+#             true += output[1].numpy().tolist()
+#             pred += output[2].numpy().tolist()
+
+#         loss = torch.mean(loss)
+
+#         cls_report = classification_report(true, pred, labels=[0, 1], output_dict=True, zero_division=0)
+
+#         accuracy = cls_report['accuracy']
+#         f1_score = cls_report['1']['f1-score']
+#         precision = cls_report['1']['precision']
+#         recall = cls_report['1']['recall']
+
+#         metrics = {}
+#         metrics['val_loss'] = loss.item()
+#         metrics['val_accuracy'] = accuracy
+#         metrics['val_f1_score'] = f1_score
+#         metrics['val_precision'] = precision
+#         metrics['val_recall'] = recall
+
+#         print()
+#         print(metrics)
+
+#         self.log_dict(metrics, prog_bar=False, on_epoch=True)
+
+#     # Metode untuk langkah pengujian
 #     def test_step(self, batch, batch_idx):
-#         # Test step method
+#         loss, true, pred = self._shared_eval_step(batch, batch_idx)
+#         return loss, true, pred
+
+#     # Metode untuk menyelesaikan epoch pengujian
+#     def test_epoch_end(self, test_step_outputs):
+#         loss = torch.Tensor().to(device='cuda')
+#         true = []
+#         pred = []
+
+#         for output in test_step_outputs:
+#             loss = torch.cat((loss, output[0].view(1)), dim=0)
+#             true += output[1].numpy().tolist()
+#             pred += output[2].numpy().tolist()
+
+#         loss = torch.mean(loss)
+
+#         cls_report = classification_report(true, pred, labels=[0, 1], output_dict=True, zero_division=0)
+
+#         accuracy = cls_report['accuracy']
+#         f1_score = cls_report['1']['f1-score']
+#         precision = cls_report['1']['precision']
+#         recall = cls_report['1']['recall']
+
+#         metrics = {}
+#         metrics['test_loss'] = loss.item()
+#         metrics['test_accuracy'] = accuracy
+#         metrics['test_f1_score'] = f1_score
+#         metrics['test_precision'] = precision
+#         metrics['test_recall'] = recall
+
+#         self.log_dict(metrics, prog_bar=False, on_epoch=True)
+
+#         return loss
+
+#     # Metode untuk langkah evaluasi bersama
+#     def _shared_eval_step(self, batch, batch_idx):
 #         input_ids, attention_mask, token_type_ids = batch
-#         logits = self(input_ids, attention_mask, token_type_ids)
-#         return logits
+#         loss, logits = self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
 
-import torch
-import pytorch_lightning as pl
+#         true = torch.argmax(targets, dim=1).to(torch.device("cpu"))
+#         pred = torch.argmax(logits, dim=1).to(torch.device("cpu"))
 
-from torch import nn
-from torch.nn import functional as F
-from sklearn.metrics import classification_report
+#         return loss, true, pred
 
-class Finetune(pl.LightningModule):
+#     # Metode untuk langkah prediksi
+#     def predict_step(self, batch, batch_idx):
+#         input_ids, attention_mask = batch
+#         logits = self(input_ids=input_ids, attention_mask=attention_mask)
 
-    def __init__(self, model, learning_rate=2e-5) -> None:
-        # Inisialisasi kelas Finetune
-        super(Finetune, self).__init__()
-        self.model = model # Menggunakan model yang telah diinisialisasi
-        self.lr = learning_rate # Menyimpan learning rate
+#         pred = torch.argmax(logits, dim=1).to(torch.device("cpu"))
 
-    def forward(self, input_ids, attention_mask, token_type_ids):
-        # Metode forward untuk melakukan propagasi maju (forward pass)
-        model_output = self.model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
-        return model_output.logits
-
-    def configure_optimizers(self):
-        # Konfigurasi optimizers, dalam hal ini menggunakan Adam optimizer
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
-        return optimizer
-
-    # Metode untuk langkah pelatihan
-    def training_step(self, batch, batch_idx):
-        input_ids, attention_mask, token_type_ids = batch
-        loss, logits = self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
-
-        metrics = {}
-        metrics['train_loss'] = loss.item() # Menyimpan loss pelatihan
-
-        self.log_dict(metrics, prog_bar=False, on_epoch=True)
-
-        return loss
-
-    # Metode untuk langkah validasi
-    def validation_step(self, batch, batch_idx):
-        loss, true, pred = self._shared_eval_step(batch, batch_idx)
-        return loss, true, pred
-
-    # Metode untuk menyelesaikan epoch validasi
-    def validation_epoch_end(self, validation_step_outputs):
-        loss = torch.Tensor().to(device='cuda')
-        true = []
-        pred = []
-
-        for output in validation_step_outputs:
-            loss = torch.cat((loss, output[0].view(1)), dim=0)
-            true += output[1].numpy().tolist()
-            pred += output[2].numpy().tolist()
-
-        loss = torch.mean(loss)
-
-        cls_report = classification_report(true, pred, labels=[0, 1], output_dict=True, zero_division=0)
-
-        accuracy = cls_report['accuracy']
-        f1_score = cls_report['1']['f1-score']
-        precision = cls_report['1']['precision']
-        recall = cls_report['1']['recall']
-
-        metrics = {}
-        metrics['val_loss'] = loss.item()
-        metrics['val_accuracy'] = accuracy
-        metrics['val_f1_score'] = f1_score
-        metrics['val_precision'] = precision
-        metrics['val_recall'] = recall
-
-        print()
-        print(metrics)
-
-        self.log_dict(metrics, prog_bar=False, on_epoch=True)
-
-    # Metode untuk langkah pengujian
-    def test_step(self, batch, batch_idx):
-        loss, true, pred = self._shared_eval_step(batch, batch_idx)
-        return loss, true, pred
-
-    # Metode untuk menyelesaikan epoch pengujian
-    def test_epoch_end(self, test_step_outputs):
-        loss = torch.Tensor().to(device='cuda')
-        true = []
-        pred = []
-
-        for output in test_step_outputs:
-            loss = torch.cat((loss, output[0].view(1)), dim=0)
-            true += output[1].numpy().tolist()
-            pred += output[2].numpy().tolist()
-
-        loss = torch.mean(loss)
-
-        cls_report = classification_report(true, pred, labels=[0, 1], output_dict=True, zero_division=0)
-
-        accuracy = cls_report['accuracy']
-        f1_score = cls_report['1']['f1-score']
-        precision = cls_report['1']['precision']
-        recall = cls_report['1']['recall']
-
-        metrics = {}
-        metrics['test_loss'] = loss.item()
-        metrics['test_accuracy'] = accuracy
-        metrics['test_f1_score'] = f1_score
-        metrics['test_precision'] = precision
-        metrics['test_recall'] = recall
-
-        self.log_dict(metrics, prog_bar=False, on_epoch=True)
-
-        return loss
-
-    # Metode untuk langkah evaluasi bersama
-    def _shared_eval_step(self, batch, batch_idx):
-        input_ids, attention_mask, token_type_ids = batch
-        loss, logits = self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
-
-        # true = torch.argmax(targets, dim=1).to(torch.device("cpu"))
-        pred = torch.argmax(logits, dim=1).to(torch.device("cpu"))
-
-        return loss, pred
-
-    # Metode untuk langkah prediksi
-    def predict_step(self, batch, batch_idx):
-        input_ids, attention_mask = batch
-        logits = self(input_ids=input_ids, attention_mask=attention_mask)
-
-        pred = torch.argmax(logits, dim=1).to(torch.device("cpu"))
-
-        return pred[0]
+#         return pred[0]
 
 #step
     # pertama tama init model dan learning rate
@@ -176,3 +138,74 @@ class Finetune(pl.LightningModule):
     # kemudian test epoch end untuk menyelesaikan epoch pengujian
     # kemudian shared eval step untuk langkah evaluasi bersama
     # kemudian predict step untuk langkah prediksi
+
+
+import torch
+import pytorch_lightning as pl
+from torch import nn
+from torch.nn import functional as F
+
+class Finetune(pl.LightningModule):
+    def __init__(self, model, learning_rate=2e-5) -> None:
+        super(Finetune, self).__init__()
+        self.model = model
+        self.lr = learning_rate
+        self.criterion = nn.CrossEntropyLoss()  # Misalnya, jika ingin menghitung loss terhadap sesuatu
+
+    def forward(self, input_ids, attention_mask, token_type_ids):
+        model_output = self.model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+        return model_output.logits
+
+    def configure_optimizers(self):
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        return optimizer
+
+    def training_step(self, batch, batch_idx):
+        input_ids, attention_mask, token_type_ids = batch
+        logits = self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+
+        # Misalnya, jika tidak ada label, loss bisa diatur dengan dummy atau dilewati
+        # Dummy label untuk CrossEntropyLoss, hanya sebagai contoh
+        dummy_labels = torch.zeros_like(logits).long().to(logits.device)
+        loss = self.criterion(logits, dummy_labels)
+
+        metrics = {'train_loss': loss.item()}
+        self.log_dict(metrics, prog_bar=False, on_epoch=True)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        input_ids, attention_mask, token_type_ids = batch
+        logits = self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+
+        # Dummy label untuk CrossEntropyLoss
+        dummy_labels = torch.zeros_like(logits).long().to(logits.device)
+        loss = self.criterion(logits, dummy_labels)
+
+        return loss
+
+    def validation_epoch_end(self, validation_step_outputs):
+        loss = torch.stack(validation_step_outputs).mean()
+        metrics = {'val_loss': loss.item()}
+        self.log_dict(metrics, prog_bar=False, on_epoch=True)
+
+    def test_step(self, batch, batch_idx):
+        input_ids, attention_mask, token_type_ids = batch
+        logits = self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+
+        # Dummy label untuk CrossEntropyLoss
+        dummy_labels = torch.zeros_like(logits).long().to(logits.device)
+        loss = self.criterion(logits, dummy_labels)
+
+        return loss
+
+    def test_epoch_end(self, test_step_outputs):
+        loss = torch.stack(test_step_outputs).mean()
+        metrics = {'test_loss': loss.item()}
+        self.log_dict(metrics, prog_bar=False, on_epoch=True)
+
+    def predict_step(self, batch, batch_idx):
+        input_ids, attention_mask, token_type_ids = batch
+        logits = self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+        pred = torch.argmax(logits, dim=1).to(torch.device("cpu"))
+        return pred[0]
+
