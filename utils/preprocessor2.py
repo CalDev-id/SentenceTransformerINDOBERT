@@ -117,6 +117,8 @@ class TwitterDataModule(pl.LightningDataModule):
         test_dataset = TensorDataset(test_x_input_ids, test_x_attention_mask, test_x_token_type_ids)
         print('[ Tokenize Completed ]\n')
 
+        train_dataset.to_csv("datasets/tokenized.csv", index=False)
+
         return train_dataset, valid_dataset, test_dataset
 
     def load_json(self, file_path):
