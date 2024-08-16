@@ -47,7 +47,8 @@ def main():
         tokenizer=pretrained_tokenizer,
         max_length=max_length,
         batch_size=batch_size,
-        recreate=True
+        recreate=True,
+        one_hot_label=True
     )
 
     # Initialize callbacks and loggers
@@ -63,7 +64,7 @@ def main():
         min_delta=0.00,
         check_on_train_epoch_end=True,
         patience=3,
-        mode='min'
+        mode='max'
     )
     tqdm_progress_bar = TQDMProgressBar()
 
