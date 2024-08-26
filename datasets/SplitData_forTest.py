@@ -1,7 +1,7 @@
 import json
 
 # Membaca dataset dari file JSON
-with open('../rawData/turnbackhoax/turnbackhoax_output_v1.json', 'r', encoding='utf-8') as file:
+with open('../rawData/github/updated_json_file.json', 'r', encoding='utf-8') as file:
     data = json.load(file)
 
 # Split the dataset
@@ -20,7 +20,7 @@ for item in data:
         })
 
 # Menyimpan hasil transformasi ke file JSON baru
-with open('turnbackhoax/turnbackhoax_output_v1.json', 'w', encoding='utf-8') as file:
+with open('github/github_sentenced_test.json', 'w', encoding='utf-8') as file:
     json.dump(split_data, file, ensure_ascii=False, indent=4)
 
 print("Transformasi selesai. Hasil disimpan di 'turnbackhoax_output_v1.json'")

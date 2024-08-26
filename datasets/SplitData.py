@@ -59,7 +59,7 @@
 import json
 
 # Membaca dataset dari file JSON
-with open('../rawdata/github/updated_json_file.json', 'r', encoding='utf-8') as file:
+with open('turnbackhoax/turnbackhoax_sentenced.json', 'r', encoding='utf-8') as file:
     data = json.load(file)
 
 # Split the dataset
@@ -77,7 +77,7 @@ for item in data:
         })
 
 # Menyimpan hasil transformasi ke file JSON baru
-with open('github/github_output_v1.json', 'w', encoding='utf-8') as file:
+with open('turnbackhoax/turnbackhoax_sentenced_combined.json', 'w', encoding='utf-8') as file:
     json.dump(split_data, file, ensure_ascii=False, indent=4)
 
-print("Transformasi selesai. Hasil disimpan di 'turnbackhoax/turnbackhoax_output.json'")
+print("Transformasi selesai. Hasil disimpan")
