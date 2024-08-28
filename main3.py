@@ -4,7 +4,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar, EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger, CSVLogger
-from utils.preprocessor3 import TwitterDataModule
+from utils.preprocessor3 import DataModule
 from models.finetune3 import Finetune
 from textwrap import dedent
 
@@ -34,38 +34,17 @@ def main():
 
     # Load pre-trained tokenizer and model
     pretrained_tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False, return_token_type_ids=True)
-    pretrained_model = AutoModelForSequenceClassification.from_pretrained(
-        model_name,
-        output_attentions=False,
-        output_hidden_states=False,
-        num_labels=2
-    )
-    model = Finetune(model=pretrained_model, learning_rate=learning_rate)
 
-    # Initialize DataModule
-    data_module = TwitterDataModule(
-        tokenizer=pretrained_tokenizer,
-        max_length=max_length,
-        batch_size=batch_size,
-        recreate=True,
-        one_hot_label=True
-    )
+    pretrained_model = AutoModelForSequenceClassification.from_pretrained(model_name, output_attentions=False, output_hidden_states=False, num_labels=2)
+    model = Finetune(model=pretrained_model, learning_rate=learning_rate)
+    data_module = DataModule(tokenizer=pretrained_tokenizer, max_length=max_length, batch_size=batch_size, recreate=True, one_hot_label=True)
 
     # Initialize callbacks and loggers
     tensor_board_logger = TensorBoardLogger('tensorboard_logs', name=f'{model_name}/{batch_size}_{learning_rate}')
     csv_logger = CSVLogger('csv_logs', name=f'{model_name}/{batch_size}_{learning_rate}')
-    checkpoint_callback = ModelCheckpoint(
-        dirpath=f'./checkpoints/{model_name}/{batch_size}_{learning_rate}',
-        monitor='val_f1_score',
-        mode='max'
-    )
-    early_stop_callback = EarlyStopping(
-        monitor='val_f1_score',
-        min_delta=0.00,
-        check_on_train_epoch_end=1,
-        patience=3,
-        mode='max'
-    )
+    checkpoint_callback = ModelCheckpoint(dirpath=f'./checkpoints/{model_name}/{batch_size}_{learning_rate}', monitor='val_f1_score', mode='max')
+    early_stop_callback = EarlyStopping(monitor='val_f1_score', min_delta=0.00, check_on_train_epoch_end=1, patience=3, mode='max')
+    
     tqdm_progress_bar = TQDMProgressBar()
 
     # Initialize Trainer
