@@ -79,13 +79,13 @@ class DataModule(pl.LightningDataModule):
         valid_x_input_ids, valid_x_attention_mask, valid_x_token_type_ids, valid_y = [], [], [], []
         test_x_input_ids, test_x_attention_mask, test_x_token_type_ids, test_y = [], [], [], []
 
-        for (query, corpus, label, step) in tqdm(dataset.values.tolist()):
-            if self.one_hot_label:
-                default = [0]*2
-                default[label] = 1
-                label = default
+        for entry in tqdm(dataset):
+            query = entry['query']
+            corpus = entry['corpus']
+            label = entry['label']
+            step = entry['step']
 
-            # Tokenize the query and corpus using encode_plus
+            # Tokenisasi dengan encode_plus
             encoded_text = self.tokenizer.encode_plus(
                 text=query,
                 text_pair=corpus,
@@ -93,25 +93,21 @@ class DataModule(pl.LightningDataModule):
                 padding="max_length",
                 truncation=True,
                 return_tensors="pt",
-                return_token_type_ids=True,
-                return_attention_mask=True
+                return_token_type_ids=True
             )
-            
-            # Store the tokenized data in the appropriate lists
+
+            # Sisipkan ke dalam list yang sesuai berdasarkan step
             if step == 'train':
-                train_x_input_ids.append(encoded_text['input_ids'].squeeze(0))
-                train_x_attention_mask.append(encoded_text['attention_mask'].squeeze(0))
-                train_x_token_type_ids.append(encoded_text['token_type_ids'].squeeze(0))
+                train_x_input_ids.append(encoded_text['input_ids'])
+                train_x_attention_mask.append(encoded_text['attention_mask'])
                 train_y.append(label)
             elif step == 'validation':
-                valid_x_input_ids.append(encoded_text['input_ids'].squeeze(0))
-                valid_x_attention_mask.append(encoded_text['attention_mask'].squeeze(0))
-                valid_x_token_type_ids.append(encoded_text['token_type_ids'].squeeze(0))
+                valid_x_input_ids.append(encoded_text['input_ids'])
+                valid_x_attention_mask.append(encoded_text['attention_mask'])
                 valid_y.append(label)
             elif step == 'test':
-                test_x_input_ids.append(encoded_text['input_ids'].squeeze(0))
-                test_x_attention_mask.append(encoded_text['attention_mask'].squeeze(0))
-                test_x_token_type_ids.append(encoded_text['token_type_ids'].squeeze(0))
+                test_x_input_ids.append(encoded_text['input_ids'])
+                test_x_attention_mask.append(encoded_text['attention_mask'])
                 test_y.append(label)
 
         # Convert lists to PyTorch tensors
