@@ -63,7 +63,7 @@ class Finetune(pl.LightningModule):
 
         loss = torch.mean(loss)
 
-        cls_report = classification_report(true, pred, labels=[0, 1], output_dict=True, zero_division=0)
+        cls_report = classification_report(true, pred, labels=[0, 1], output_dict=True)
 
         accuracy = cls_report['accuracy']
         f1_score = cls_report['1']['f1-score']
@@ -98,7 +98,7 @@ class Finetune(pl.LightningModule):
 
         loss = torch.mean(loss)
 
-        cls_report = classification_report(true, pred, labels=[0, 1], output_dict=True, zero_division=0)
+        cls_report = classification_report(true, pred, labels=[0, 1], output_dict=True)
 
         accuracy = cls_report['accuracy']
         f1_score = cls_report['1']['f1-score']
