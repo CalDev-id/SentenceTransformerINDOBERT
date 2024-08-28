@@ -85,6 +85,11 @@ class DataModule(pl.LightningDataModule):
             label = entry['label']
             step = entry['step']
 
+            if self.one_hot_label:
+                default = [0] * 2
+                default[label] = 1
+                label = default
+
             # Tokenisasi dengan encode_plus
             encoded_text = self.tokenizer.encode_plus(
                 text=query,
