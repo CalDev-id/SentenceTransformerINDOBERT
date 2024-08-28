@@ -74,46 +74,44 @@ class DataModule(pl.LightningDataModule):
 
         print('[ Tokenizing Dataset ]')
 
-        # Initialize lists for tokenized inputs, attention masks, token type ids, and labels
+        # Initialize lists for tokenized inputs, attention masks, token_type_ids, and labels
         train_x_input_ids, train_x_attention_mask, train_x_token_type_ids, train_y = [], [], [], []
         valid_x_input_ids, valid_x_attention_mask, valid_x_token_type_ids, valid_y = [], [], [], []
         test_x_input_ids, test_x_attention_mask, test_x_token_type_ids, test_y = [], [], [], []
 
-        for item in tqdm(dataset, desc='Tokenizing'):
-            text = item["query"]
-            corpus = item["corpus"]
-            label = item["label"]
-            step = item["step"]
-
-            # One-hot encode labels if specified
+        for (query, corpus, label, step) in tqdm(dataset.values.tolist()):
             if self.one_hot_label:
-                default = [0] * 2
+                default = [0]*2
                 default[label] = 1
                 label = default
 
-            # Tokenize the text and corpus using the provided tokenizer
-            encoded_text = self.tokenizer(text=text,
-                                          text_pair=corpus,
-                                          max_length=self.max_length,
-                                          padding="max_length",
-                                          truncation=True,
-                                          return_tensors='pt')
-
-            # Append the tokenized input, attention mask, token type ids, and label to the corresponding lists based on the source
+            # Tokenize the query and corpus using encode_plus
+            encoded_text = self.tokenizer.encode_plus(
+                text=query,
+                text_pair=corpus,
+                max_length=self.max_length,
+                padding="max_length",
+                truncation=True,
+                return_tensors="pt",
+                return_token_type_ids=True,
+                return_attention_mask=True
+            )
+            
+            # Store the tokenized data in the appropriate lists
             if step == 'train':
-                train_x_input_ids.append(encoded_text['input_ids'].squeeze())
-                train_x_attention_mask.append(encoded_text['attention_mask'].squeeze())
-                train_x_token_type_ids.append(encoded_text['token_type_ids'].squeeze())
+                train_x_input_ids.append(encoded_text['input_ids'].squeeze(0))
+                train_x_attention_mask.append(encoded_text['attention_mask'].squeeze(0))
+                train_x_token_type_ids.append(encoded_text['token_type_ids'].squeeze(0))
                 train_y.append(label)
             elif step == 'validation':
-                valid_x_input_ids.append(encoded_text['input_ids'].squeeze())
-                valid_x_attention_mask.append(encoded_text['attention_mask'].squeeze())
-                valid_x_token_type_ids.append(encoded_text['token_type_ids'].squeeze())
+                valid_x_input_ids.append(encoded_text['input_ids'].squeeze(0))
+                valid_x_attention_mask.append(encoded_text['attention_mask'].squeeze(0))
+                valid_x_token_type_ids.append(encoded_text['token_type_ids'].squeeze(0))
                 valid_y.append(label)
             elif step == 'test':
-                test_x_input_ids.append(encoded_text['input_ids'].squeeze())
-                test_x_attention_mask.append(encoded_text['attention_mask'].squeeze())
-                test_x_token_type_ids.append(encoded_text['token_type_ids'].squeeze())
+                test_x_input_ids.append(encoded_text['input_ids'].squeeze(0))
+                test_x_attention_mask.append(encoded_text['attention_mask'].squeeze(0))
+                test_x_token_type_ids.append(encoded_text['token_type_ids'].squeeze(0))
                 test_y.append(label)
 
         # Convert lists to PyTorch tensors
@@ -132,12 +130,11 @@ class DataModule(pl.LightningDataModule):
         test_x_token_type_ids = torch.stack(test_x_token_type_ids)
         test_y = torch.tensor(test_y).float()
 
-        del (dataset)  # Release memory by deleting the dataset
-
         # Create TensorDatasets for train, validation, and test sets
         train_dataset = TensorDataset(train_x_input_ids, train_x_attention_mask, train_x_token_type_ids, train_y)
         valid_dataset = TensorDataset(valid_x_input_ids, valid_x_attention_mask, valid_x_token_type_ids, valid_y)
         test_dataset = TensorDataset(test_x_input_ids, test_x_attention_mask, test_x_token_type_ids, test_y)
+
         print('[ Tokenize Completed ]\n')
 
         return train_dataset, valid_dataset, test_dataset
