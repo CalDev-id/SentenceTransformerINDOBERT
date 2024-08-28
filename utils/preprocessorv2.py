@@ -95,19 +95,22 @@ class DataModule(pl.LightningDataModule):
                 return_tensors="pt",
                 return_token_type_ids=True
             )
-
-            # Sisipkan ke dalam list yang sesuai berdasarkan step
+            
+            # Store the tokenized data in the appropriate lists
             if step == 'train':
-                train_x_input_ids.append(encoded_text['input_ids'])
-                train_x_attention_mask.append(encoded_text['attention_mask'])
+                train_x_input_ids.append(encoded_text['input_ids'].squeeze(0))
+                train_x_attention_mask.append(encoded_text['attention_mask'].squeeze(0))
+                train_x_token_type_ids.append(encoded_text['token_type_ids'].squeeze(0))
                 train_y.append(label)
             elif step == 'validation':
-                valid_x_input_ids.append(encoded_text['input_ids'])
-                valid_x_attention_mask.append(encoded_text['attention_mask'])
+                valid_x_input_ids.append(encoded_text['input_ids'].squeeze(0))
+                valid_x_attention_mask.append(encoded_text['attention_mask'].squeeze(0))
+                valid_x_token_type_ids.append(encoded_text['token_type_ids'].squeeze(0))
                 valid_y.append(label)
             elif step == 'test':
-                test_x_input_ids.append(encoded_text['input_ids'])
-                test_x_attention_mask.append(encoded_text['attention_mask'])
+                test_x_input_ids.append(encoded_text['input_ids'].squeeze(0))
+                test_x_attention_mask.append(encoded_text['attention_mask'].squeeze(0))
+                test_x_token_type_ids.append(encoded_text['token_type_ids'].squeeze(0))
                 test_y.append(label)
 
         # Convert lists to PyTorch tensors
