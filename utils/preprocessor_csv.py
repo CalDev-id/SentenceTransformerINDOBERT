@@ -9,6 +9,8 @@ import pytorch_lightning as pl
 from tqdm import tqdm
 from torch.utils.data import TensorDataset, DataLoader
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
+import logging
+logging.disable(logging.WARNING)
 
 class DataModule(pl.LightningDataModule):
 
