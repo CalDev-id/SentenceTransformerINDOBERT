@@ -117,14 +117,18 @@ class DataModule(pl.LightningDataModule):
         return train_dataset, valid_dataset, test_dataset
 
     def clean_text(self, text):
+        # Cek jika teks adalah NaN atau None, kembalikan NaN
+        if pd.isna(text):
+            return float('NaN')
+        
         result = text.lower()
-        result = self.remove_emoji(result)
-        result = re.sub(r'\n', ' ', result)
-        result = re.sub(r'@\w+', 'user', result)
-        result = re.sub(r'http\S+', '', result)
-        result = re.sub(r'\d+', '', result)
-        result = re.sub(r'[^a-zA-Z ]', '', result)
-        result = ' '.join([word for word in result.split() if word not in self.stop_words])
+        result = self.remove_emoji(result)  # remove emoji
+        result = re.sub(r'\n', ' ', result)  # remove new line
+        result = re.sub(r'@\w+', 'user', result)  # remove user mention
+        result = re.sub(r'http\S+', '', result)  # remove link
+        result = re.sub(r'\d+', '', result)  # remove number
+        result = re.sub(r'[^a-zA-Z ]', '', result)  # get only alphabets
+        result = ' '.join([word for word in result.split() if word not in self.stop_words])  # remove stopword
         result = result.strip()
 
         if result == '':
