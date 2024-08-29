@@ -4,7 +4,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar, EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger, CSVLogger
-from utils.preprocessorv2 import DataModule
+from utils.preprocessor_csv import DataModule
 from models.finetune3 import Finetune
 from textwrap import dedent
 
