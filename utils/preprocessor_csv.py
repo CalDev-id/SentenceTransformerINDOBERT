@@ -21,10 +21,10 @@ class DataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.recreate = recreate
         self.one_hot_label = one_hot_label
-        self.train_dataset_path = "datasets/github/github_train.json"
-        self.validation_dataset_path = "datasets/github/github_val.json"
-        self.test_dataset_path = "datasets/github/github_test.json"
-        self.processed_dataset_path = "datasets/github/github_preprocessed.json"
+        self.train_dataset_path = "datasets/github/github_train.csv"
+        self.validation_dataset_path = "datasets/github/github_val.csv"
+        self.test_dataset_path = "datasets/github/github_test.csv"
+        self.processed_dataset_path = "datasets/github/github_preprocessed.csv"
 
     def load_data(self):
         # Load dataset if exists, else preprocess and save
