@@ -5,12 +5,14 @@ import emoji
 import pandas as pd
 import multiprocessing
 import pytorch_lightning as pl
+import transformers 
+#import transformers
 
 from tqdm import tqdm
 from torch.utils.data import TensorDataset, DataLoader
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 import logging
-logging.disable(logging.WARNING)
+
 
 class DataModule(pl.LightningDataModule):
 
@@ -60,24 +62,24 @@ class DataModule(pl.LightningDataModule):
         total_size = len(dataset.index)
 
         print('[ Tokenizing Dataset ]')
-
+        
         train_x_input_ids, train_x_attention_mask, train_x_token_type_ids, train_y = [], [], [], []
         valid_x_input_ids, valid_x_attention_mask, valid_x_token_type_ids, valid_y = [], [], [], []
         test_x_input_ids, test_x_attention_mask, test_x_token_type_ids, test_y = [], [], [], []
 
         for (query, label, corpus, step) in tqdm(dataset.values.tolist()):
+            logging.disable(logging.WARNING)
             if self.one_hot_label:
                 default = [0]*2
                 default[label] = 1
                 label = default 
-
+            transformers.logging.set_verbosity_error()
             encoded_text = self.tokenizer.encode_plus(text=query,
                                           text_pair=corpus,  # text_pair for query-corpus pairing
                                           max_length=self.max_length,
                                           padding="max_length",
                                           truncation=True,
-                                          return_token_type_ids=True)  # include token_type_ids
-            
+                                          return_token_type_ids=True)
             if step == 'train':
                 train_x_input_ids.append(encoded_text['input_ids'])
                 train_x_attention_mask.append(encoded_text['attention_mask'])
