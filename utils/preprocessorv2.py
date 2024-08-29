@@ -8,6 +8,7 @@ import pytorch_lightning as pl
 from tqdm import tqdm
 from torch.utils.data import TensorDataset, DataLoader
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
+import transformers
 
 class DataModule(pl.LightningDataModule):
 
@@ -84,7 +85,7 @@ class DataModule(pl.LightningDataModule):
             corpus = entry['corpus']
             label = entry['label']
             step = entry['step']
-
+            transformers.logging.set_verbosity_error()
             if self.one_hot_label:
                 default = [0] * 2
                 default[label] = 1
