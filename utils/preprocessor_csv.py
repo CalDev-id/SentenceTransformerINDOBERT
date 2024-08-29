@@ -10,10 +10,10 @@ from tqdm import tqdm
 from torch.utils.data import TensorDataset, DataLoader
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 
-class TwitterDataModule(pl.LightningDataModule):
+class DataModule(pl.LightningDataModule):
 
     def __init__(self, tokenizer, max_length=128, batch_size=32, recreate=False, one_hot_label=False) -> None:
-        super(TwitterDataModule, self).__init__()
+        super(DataModule, self).__init__()
 
         self.seed = 42
         self.tokenizer = tokenizer
