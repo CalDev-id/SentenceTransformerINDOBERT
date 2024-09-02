@@ -18,11 +18,11 @@ def split_dataset(json_file, validation_split=0.2, seed=42):
     # with open('train_data.json', 'w') as f:
     #     json.dump(train_data, f)
     
-    with open('mendaley/valid_data.json', 'w') as f:
+    with open('turnbackhoax/valid_data.json', 'w') as f:
         json.dump(valid_data, f)
 
     print(f"Train data: {len(train_data)} samples")
     print(f"Validation data: {len(valid_data)} samples")
 
 # Panggil fungsi dengan file JSON Anda
-split_dataset('mendaley/github_tbh_train.json', validation_split=0.2)
+split_dataset('turnbackhoax/github_mendaley_train.json', validation_split=0.2)
