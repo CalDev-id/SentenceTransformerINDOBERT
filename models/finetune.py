@@ -276,49 +276,45 @@ class FinetuneV2(pl.LightningModule):
 
 #==================================================================================================
 
-class CrossAttention(nn.Module):
+class CrossAttentionLayer(nn.Module):
     def __init__(self, embed_dim, num_heads):
-        super(CrossAttention, self).__init__()
-        self.multihead_attn = nn.MultiheadAttention(embed_dim, num_heads)
+        super(CrossAttentionLayer, self).__init__()
+        self.attention = nn.MultiheadAttention(embed_dim, num_heads)
+        self.norm = nn.LayerNorm(embed_dim)
+        self.dropout = nn.Dropout(0.1)
 
-    def forward(self, query, key, value, attn_mask=None):
-        # Query and key/value should be of shape [seq_len, batch_size, embed_dim]
-        attn_output, attn_output_weights = self.multihead_attn(query, key, value, attn_mask=attn_mask)
-        return attn_output
+    def forward(self, query, key, value, attention_mask=None):
+        attention_output, _ = self.attention(query, key, value, attn_mask=attention_mask)
+        attention_output = self.dropout(attention_output)
+        return self.norm(attention_output + query)
     
 class FinetuneV3WithCrossAttention(pl.LightningModule):
-    def __init__(self, model, learning_rate=2e-5, embed_dim=768, num_heads=8) -> None:
+    def __init__(self, model, learning_rate=2e-5) -> None:
         super(FinetuneV3WithCrossAttention, self).__init__()
         self.model = model
         self.lr = learning_rate
 
-        # Cross Attention layer
-        self.cross_attention = CrossAttention(embed_dim, num_heads)
-
-        self.linear1 = nn.Linear(embed_dim, 32)
-        self.linear2 = nn.Linear(32, 1)
+        # Adding cross-attention layers
+        self.cross_attention = CrossAttentionLayer(embed_dim=768, num_heads=8)
+        
+        self.linear1 = nn.Linear(768, 32)
+        self.linear2 = nn.Linear(32, 2)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(0.1)
 
-        self.criterion = nn.BCEWithLogitsLoss()
+        self.criterion = nn.CrossEntropyLoss()
 
     def forward(self, input_ids, attention_mask, token_type_ids=None):
         model_output = self.model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
 
-        # Example: Assume we pass the `model_output.last_hidden_state` to cross-attention layer
-        cross_attn_output = self.cross_attention(
-            query=model_output.last_hidden_state.transpose(0, 1),  # [seq_len, batch_size, embed_dim]
-            key=model_output.last_hidden_state.transpose(0, 1),
-            value=model_output.last_hidden_state.transpose(0, 1)
-        )
-        
-        # Flatten cross attention output for classification
-        cross_attn_output = cross_attn_output.mean(dim=0)  # Taking mean along seq_len dimension
-        
-        linear_output = self.linear1(cross_attn_output)
+        # Apply cross-attention on the hidden states (last_hidden_state)
+        cross_attn_output = self.cross_attention(model_output.last_hidden_state, model_output.last_hidden_state, model_output.last_hidden_state)
+
+        pooled_output = cross_attn_output[:, 0]  # Pooling only the [CLS] token output
+        linear_output = self.linear1(pooled_output)
         relu_output = self.relu(linear_output)
-        linear_output = self.linear2(relu_output)
-        return linear_output
+        output = self.linear2(relu_output)
+        return output
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
