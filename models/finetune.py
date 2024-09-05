@@ -422,11 +422,16 @@ class FinetuneV3WithCrossAttention(pl.LightningModule):
     def _shared_eval_step(self, batch, batch_idx):
         input_ids, attention_mask, token_type_ids, targets = batch
         outputs = self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+        
+        # Ensure targets is of type long
+        targets = targets.long()
 
+        # Compute loss
         loss = self.criterion(outputs, targets)
-        true = targets.cpu()
-        pred = torch.argmax(outputs, dim=1).cpu()
 
+        true = targets.cpu()
+        pred = outputs.argmax(dim=1).cpu()  # Use argmax for classification
+        
         return loss, true, pred
 
     def predict_step(self, batch, batch_idx):
