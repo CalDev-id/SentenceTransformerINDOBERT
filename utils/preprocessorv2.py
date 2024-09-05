@@ -21,10 +21,24 @@ class DataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.recreate = recreate
         self.one_hot_label = one_hot_label
-        self.train_dataset_path = "datasets/turnbackhoax/github_mendaley_train.json"
-        self.validation_dataset_path = "datasets/turnbackhoax/valid_data.json"
-        self.test_dataset_path = "datasets/turnbackhoax/turnbackhoax_sentenced_test.json"
+
+        # github dataset
+        self.train_dataset_path = "datasets/github/mendaley_tbh_train.json"
+        self.validation_dataset_path = "datasets/github/valid_data.json"
+        self.test_dataset_path = "datasets/github/github_sentenced_test.json"
         self.processed_dataset_path = "datasets/manual_processed.json"
+
+        # mendaley dataset
+        # self.train_dataset_path = "datasets/mendaley/github_tbh_train.json"
+        # self.validation_dataset_path = "datasets/mendaley/valid_data.json"
+        # self.test_dataset_path = "datasets/mendaley/mendaley_sentenced_test.json"
+        # self.processed_dataset_path = "datasets/manual_processed.json"
+
+        # turnbackhoax dataset
+        # self.train_dataset_path = "datasets/turnbackhoax/github_mendaley_train.json"
+        # self.validation_dataset_path = "datasets/turnbackhoax/valid_data.json"
+        # self.test_dataset_path = "datasets/turnbackhoax/turnbackhoax_sentenced_test.json"
+        # self.processed_dataset_path = "datasets/manual_processed.json"
 
     def load_data(self):
         # Load dataset if exists, else preprocess and save
