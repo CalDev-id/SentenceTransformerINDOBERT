@@ -333,22 +333,31 @@ class FinetuneV3WithCrossAttention(pl.LightningModule):
 
     #     return loss
     
+    #22222
+    # def training_step(self, batch, batch_idx):
+    #     input_ids, attention_mask, token_type_ids, targets = batch
+    #     outputs = torch.squeeze(self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids), dim=1)
+
+    #     # Pastikan targets memiliki tipe long
+    #     targets = targets.long()
+
+    #     loss = self.criterion(outputs, targets)
+
+    #     metrics = {}
+    #     metrics['train_loss'] = loss.item()
+
+    #     self.log_dict(metrics, prog_bar=False, on_epoch=True)
+
+    #     return loss
     def training_step(self, batch, batch_idx):
-        input_ids, attention_mask, token_type_ids, targets = batch
-        outputs = torch.squeeze(self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids), dim=1)
+            input_ids, attention_mask, token_type_ids, targets = batch
+            outputs = self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
 
-        # Pastikan targets memiliki tipe long
-        targets = targets.long()
+            loss = self.criterion(outputs, targets)
 
-        loss = self.criterion(outputs, targets)
-
-        metrics = {}
-        metrics['train_loss'] = loss.item()
-
-        self.log_dict(metrics, prog_bar=False, on_epoch=True)
-
-        return loss
-
+            metrics = {'train_loss': loss.item()}
+            self.log_dict(metrics, prog_bar=False, on_epoch=True)
+            return loss
 
     def validation_step(self, batch, batch_idx):
         loss, true, pred = self._shared_eval_step(batch, batch_idx)
@@ -421,12 +430,11 @@ class FinetuneV3WithCrossAttention(pl.LightningModule):
 
     def _shared_eval_step(self, batch, batch_idx):
         input_ids, attention_mask, token_type_ids, targets = batch
-        outputs = torch.squeeze(self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids), dim=1)
+        outputs = self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
 
         loss = self.criterion(outputs, targets)
-
-        true = targets.to(torch.device("cpu"))
-        pred = (torch.sigmoid(outputs) >= 0.5).int().to(torch.device("cpu"))
+        true = targets.cpu()
+        pred = torch.argmax(outputs, dim=1).cpu()
 
         return loss, true, pred
 
