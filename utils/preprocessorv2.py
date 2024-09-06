@@ -23,16 +23,16 @@ class DataModule(pl.LightningDataModule):
         self.one_hot_label = one_hot_label
 
         # github dataset
-        self.train_dataset_path = "datasets/github/mendaley_tbh_train.json"
-        self.validation_dataset_path = "datasets/github/valid_data.json"
-        self.test_dataset_path = "datasets/github/github_sentenced_test.json"
-        self.processed_dataset_path = "datasets/manual_processed.json"
+        # self.train_dataset_path = "datasets/github/mendaley_tbh_train.json"
+        # self.validation_dataset_path = "datasets/github/valid_data.json"
+        # self.test_dataset_path = "datasets/github/github_sentenced_test.json"
+        # self.processed_dataset_path = "datasets/manual_processed.json"
 
         # mendaley dataset
-        # self.train_dataset_path = "datasets/mendaley/github_tbh_train.json"
-        # self.validation_dataset_path = "datasets/mendaley/valid_data.json"
-        # self.test_dataset_path = "datasets/mendaley/mendaley_sentenced_test.json"
-        # self.processed_dataset_path = "datasets/manual_processed.json"
+        self.train_dataset_path = "datasets/mendaley/github_tbh_train.json"
+        self.validation_dataset_path = "datasets/mendaley/valid_data.json"
+        self.test_dataset_path = "datasets/mendaley/mendaley_sentenced_test.json"
+        self.processed_dataset_path = "datasets/manual_processed.json"
 
         # turnbackhoax dataset
         # self.train_dataset_path = "datasets/turnbackhoax/github_mendaley_train.json"
