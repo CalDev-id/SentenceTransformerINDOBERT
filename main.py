@@ -56,9 +56,9 @@ if __name__ == '__main__':
 
     if version == 1:
         # pretrained_model = AutoModelForSequenceClassification.from_pretrained(pretrained_model_name[model_name], output_attentions=False, output_hidden_states=False, num_labels=2)
-        pretrained_model = AutoModel.from_pretrained(pretrained_model_name[model_name], output_attentions=False, output_hidden_states=False, num_labels=2)
+        pretrained_model = AutoModel.from_pretrained(pretrained_model_name[model_name], output_attentions=False, output_hidden_states=False)
         model = Finetune(model=pretrained_model, learning_rate=learning_rate)
-        data_module = DataModule(tokenizer=pretrained_tokenizer, max_length=max_length, batch_size=batch_size, recreate=True, one_hot_label=True)
+        data_module = DataModule(tokenizer=pretrained_tokenizer, max_length=max_length, batch_size=batch_size, recreate=True)
     elif version == 2:
         pretrained_model = AutoModel.from_pretrained(pretrained_model_name[model_name], output_attentions=False, output_hidden_states=False)
         model = FinetuneV2(model=pretrained_model, learning_rate=learning_rate)
