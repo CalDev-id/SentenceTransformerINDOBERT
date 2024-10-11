@@ -11,22 +11,29 @@ class Finetune(pl.LightningModule):
         self.model = model
         self.lr = learning_rate
 
-    def forward(self, input_ids, attention_mask, token_type_ids, labels=None):
-        if labels is not None:
-            model_output = self.model(
-                input_ids=input_ids,
-                attention_mask=attention_mask,
-                token_type_ids=token_type_ids,
-                labels=labels
-            )
-            return model_output.loss, model_output.logits
-        else:
-            model_output = self.model(
-                input_ids=input_ids,
-                attention_mask=attention_mask,
-                token_type_ids=token_type_ids
-            )
-            return model_output.logits
+    def forward(self, input_ids, attention_mask, token_type_ids):
+        # if labels is not None:
+        #     model_output = self.model(
+        #         input_ids=input_ids,
+        #         attention_mask=attention_mask,
+        #         token_type_ids=token_type_ids,
+        #         labels=labels
+        #     )
+        #     return model_output.loss, model_output.logits
+        # else:
+        #     model_output = self.model(
+        #         input_ids=input_ids,
+        #         attention_mask=attention_mask,
+        #         token_type_ids=token_type_ids
+        #     )
+        #     return model_output.logits
+        model_output = self.model(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            token_type_ids=token_type_ids,
+            labels=labels
+        )
+        return model_output.loss, model_output.logits
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
@@ -320,20 +327,6 @@ class FinetuneV3WithCrossAttention(pl.LightningModule):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         return optimizer
 
-    # def training_step(self, batch, batch_idx):
-    #     input_ids, attention_mask, token_type_ids, targets = batch
-    #     outputs = torch.squeeze(self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids), dim=1)
-
-    #     loss = self.criterion(outputs, targets)
-
-    #     metrics = {}
-    #     metrics['train_loss'] = loss.item()
-
-    #     self.log_dict(metrics, prog_bar=False, on_epoch=True)
-
-    #     return loss
-    
-    #22222
     def training_step(self, batch, batch_idx):
         input_ids, attention_mask, token_type_ids, targets = batch
         outputs = torch.squeeze(self(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids), dim=1)
