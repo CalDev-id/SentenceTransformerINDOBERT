@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
     #cnn
     pretrained_model = AutoModel.from_pretrained(model_name, output_attentions=False, output_hidden_states=True)
-    model = Finetune(model=pretrained_model, learning_rate=learning_rate)
+    model = FinetuneV2(model=pretrained_model, learning_rate=learning_rate)
     data_module = DataModule(tokenizer=pretrained_tokenizer, max_length=max_length, batch_size=batch_size, recreate=True)
 
     # Initialize callbacks and progressbar
