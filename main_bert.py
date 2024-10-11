@@ -42,7 +42,7 @@ if __name__ == '__main__':
     # data_module = TwitterDataModule(tokenizer=pretrained_tokenizer, max_length=max_length, batch_size=batch_size, recreate=True, one_hot_label=True)
 
     #cnn
-    pretrained_model = AutoModel.from_pretrained(pretrained_model_name[model_name], output_attentions=False, output_hidden_states=False)
+    pretrained_model = AutoModel.from_pretrained(model_name, output_attentions=False, output_hidden_states=True)
     model = Finetune(model=pretrained_model, learning_rate=learning_rate)
     data_module = DataModule(tokenizer=pretrained_tokenizer, max_length=max_length, batch_size=batch_size, recreate=True)
 
