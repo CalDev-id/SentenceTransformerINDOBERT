@@ -13,7 +13,7 @@ from textwrap import dedent
 
 if __name__ == '__main__':
     # Get arguments values
-    model_name = 'indolem/indobert-base-uncased'
+    model_name = 'bert-base-uncased'
     learning_rate = 2e-5
     batch_size = 32
     max_length = 128
