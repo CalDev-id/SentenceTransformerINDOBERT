@@ -8,6 +8,7 @@ import pytorch_lightning as pl
 from tqdm import tqdm
 from torch.utils.data import TensorDataset, DataLoader
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
+from sklearn.model_selection import train_test_split
 import transformers
 
 class DataModule(pl.LightningDataModule):
@@ -22,23 +23,8 @@ class DataModule(pl.LightningDataModule):
         self.recreate = recreate
         self.one_hot_label = one_hot_label
 
-        # github dataset
-        # self.train_dataset_path = "datasets/github/mendaley_tbh_train.json"
-        # self.validation_dataset_path = "datasets/github/valid_data.json"
-        # self.test_dataset_path = "datasets/github/github_sentenced_test.json"
-        # self.processed_dataset_path = "datasets/manual_processed.json"
-
-        # mendaley dataset
-        # self.train_dataset_path = "datasets/mendaley/github_tbh_train.json"
-        # self.validation_dataset_path = "datasets/mendaley/valid_data.json"
-        # self.test_dataset_path = "datasets/mendaley/mendaley_sentenced_test.json"
-        # self.processed_dataset_path = "datasets/manual_processed.json"
-
-        # turnbackhoax dataset
-        
-        self.train_dataset_path = "datasets/turnbackhoax/github_mendaley_train.json"
-        self.validation_dataset_path = "datasets/turnbackhoax/valid_data.json"
-        self.test_dataset_path = "datasets/turnbackhoax/turnbackhoax_sentenced_test.json"
+        # Path to the combined dataset
+        self.dataset_path = "datasets/datasets.json"
         self.processed_dataset_path = "datasets/manual_processed.json"
 
     def load_data(self):
@@ -50,24 +36,9 @@ class DataModule(pl.LightningDataModule):
             print('[ Load Completed ]\n')
         else:
             print('[ Preprocessing Dataset ]')
-            # Read train, validation, and test datasets
-            with open(self.train_dataset_path, 'r') as f:
-                dataset_train = json.load(f)
-            with open(self.validation_dataset_path, 'r') as f:
-                dataset_valid = json.load(f)
-            with open(self.test_dataset_path, 'r') as f:
-                dataset_test = json.load(f)
-
-            # Add a 'step' key to identify the source (train, validation, test)
-            for item in dataset_train:
-                item['step'] = 'train'
-            for item in dataset_valid:
-                item['step'] = 'validation'
-            for item in dataset_test:
-                item['step'] = 'test'
-
-            # Concatenate all datasets into one
-            dataset = dataset_train + dataset_valid + dataset_test
+            # Load the combined dataset
+            with open(self.dataset_path, 'r') as f:
+                dataset = json.load(f)
 
             # Get stop words for Bahasa Indonesia using Sastrawi library
             self.stop_words = StopWordRemoverFactory().get_stop_words()
@@ -90,23 +61,20 @@ class DataModule(pl.LightningDataModule):
 
         print('[ Tokenizing Dataset ]')
 
-        # Initialize lists for tokenized inputs, attention masks, token_type_ids, and labels
-        train_x_input_ids, train_x_attention_mask, train_x_token_type_ids, train_y = [], [], [], []
-        valid_x_input_ids, valid_x_attention_mask, valid_x_token_type_ids, valid_y = [], [], [], []
-        test_x_input_ids, test_x_attention_mask, test_x_token_type_ids, test_y = [], [], [], []
+        # Initialize lists for tokenized inputs and labels
+        x_input_ids, x_attention_mask, x_token_type_ids, y = [], [], [], []
 
         for entry in tqdm(dataset):
             query = entry['query']
             corpus = entry['corpus']
             label = entry['label']
-            step = entry['step']
             transformers.logging.set_verbosity_error()
             if self.one_hot_label:
                 default = [0] * 2
                 default[label] = 1
                 label = default
 
-            # Tokenisasi dengan encode_plus
+            # Tokenization
             encoded_text = self.tokenizer.encode_plus(
                 text=query,
                 text_pair=corpus,
@@ -116,44 +84,31 @@ class DataModule(pl.LightningDataModule):
                 return_tensors="pt",
                 return_token_type_ids=True
             )
-            
-            # Store the tokenized data in the appropriate lists
-            if step == 'train':
-                train_x_input_ids.append(encoded_text['input_ids'].squeeze(0))
-                train_x_attention_mask.append(encoded_text['attention_mask'].squeeze(0))
-                train_x_token_type_ids.append(encoded_text['token_type_ids'].squeeze(0))
-                train_y.append(label)
-            elif step == 'validation':
-                valid_x_input_ids.append(encoded_text['input_ids'].squeeze(0))
-                valid_x_attention_mask.append(encoded_text['attention_mask'].squeeze(0))
-                valid_x_token_type_ids.append(encoded_text['token_type_ids'].squeeze(0))
-                valid_y.append(label)
-            elif step == 'test':
-                test_x_input_ids.append(encoded_text['input_ids'].squeeze(0))
-                test_x_attention_mask.append(encoded_text['attention_mask'].squeeze(0))
-                test_x_token_type_ids.append(encoded_text['token_type_ids'].squeeze(0))
-                test_y.append(label)
+
+            # Store the tokenized data
+            x_input_ids.append(encoded_text['input_ids'].squeeze(0))
+            x_attention_mask.append(encoded_text['attention_mask'].squeeze(0))
+            x_token_type_ids.append(encoded_text['token_type_ids'].squeeze(0))
+            y.append(label)
 
         # Convert lists to PyTorch tensors
-        train_x_input_ids = torch.stack(train_x_input_ids)
-        train_x_attention_mask = torch.stack(train_x_attention_mask)
-        train_x_token_type_ids = torch.stack(train_x_token_type_ids)
-        train_y = torch.tensor(train_y).float()
+        x_input_ids = torch.stack(x_input_ids)
+        x_attention_mask = torch.stack(x_attention_mask)
+        x_token_type_ids = torch.stack(x_token_type_ids)
+        y = torch.tensor(y).float()
 
-        valid_x_input_ids = torch.stack(valid_x_input_ids)
-        valid_x_attention_mask = torch.stack(valid_x_attention_mask)
-        valid_x_token_type_ids = torch.stack(valid_x_token_type_ids)
-        valid_y = torch.tensor(valid_y).float()
-
-        test_x_input_ids = torch.stack(test_x_input_ids)
-        test_x_attention_mask = torch.stack(test_x_attention_mask)
-        test_x_token_type_ids = torch.stack(test_x_token_type_ids)
-        test_y = torch.tensor(test_y).float()
+        # Split the dataset into train, validation, and test sets
+        x_train, x_temp, y_train, y_temp = train_test_split(
+            x_input_ids, y, test_size=0.3, random_state=self.seed
+        )
+        x_val, x_test, y_val, y_test = train_test_split(
+            x_temp, y_temp, test_size=0.5, random_state=self.seed
+        )
 
         # Create TensorDatasets for train, validation, and test sets
-        train_dataset = TensorDataset(train_x_input_ids, train_x_attention_mask, train_x_token_type_ids, train_y)
-        valid_dataset = TensorDataset(valid_x_input_ids, valid_x_attention_mask, valid_x_token_type_ids, valid_y)
-        test_dataset = TensorDataset(test_x_input_ids, test_x_attention_mask, test_x_token_type_ids, test_y)
+        train_dataset = TensorDataset(x_train, x_attention_mask[:len(x_train)], x_token_type_ids[:len(x_train)], y_train)
+        valid_dataset = TensorDataset(x_val, x_attention_mask[len(x_train):len(x_train) + len(x_val)], x_token_type_ids[len(x_train):len(x_train) + len(x_val )], y_val)
+        test_dataset = TensorDataset(x_test, x_attention_mask[len(x_train) + len(x_val):], x_token_type_ids[len(x_train) + len(x_val):], y_test)
 
         print('[ Tokenize Completed ]\n')
 

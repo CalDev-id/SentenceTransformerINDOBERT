@@ -55,9 +55,9 @@ if __name__ == '__main__':
     pretrained_tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name[model_name], return_token_type_ids=True, use_fast=False)
 
     if version == 1:
-        pretrained_model = AutoModel.from_pretrained(pretrained_model_name[model_name], output_attentions=False, output_hidden_states=False)
+        pretrained_model = AutoModel.from_pretrained(pretrained_model_name[model_name], output_attentions=False, output_hidden_states=False, output_hidden_states=False, num_labels=2)
         model = Finetune(model=pretrained_model, learning_rate=learning_rate)
-        data_module = DataModule(tokenizer=pretrained_tokenizer, max_length=max_length, batch_size=batch_size, recreate=True)
+        data_module = DataModule(tokenizer=pretrained_tokenizer, max_length=max_length, batch_size=batch_size, recreate=True, one_hot_label=True)
     elif version == 2:
         pretrained_model = AutoModel.from_pretrained(pretrained_model_name[model_name], output_attentions=False, output_hidden_states=False)
         model = FinetuneV2(model=pretrained_model, learning_rate=learning_rate)
