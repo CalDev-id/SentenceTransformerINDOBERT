@@ -11,7 +11,7 @@ class Finetune(pl.LightningModule):
         self.model = model
         self.lr = learning_rate
 
-    def forward(self, input_ids, attention_mask, token_type_ids=None, labels=None):
+    def forward(self, input_ids, attention_mask=None, token_type_ids=None, labels=None, position_ids=None, head_mask=None):
         if labels is not None:
             model_output = self.model(
                 input_ids=input_ids,
