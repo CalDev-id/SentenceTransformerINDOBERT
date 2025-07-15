@@ -118,7 +118,7 @@ model = FinetuneV2.load_from_checkpoint(checkpoint_path, model=pretrained_model)
 model.eval()
 
 # Load data uji dari mendaley_sentenced_test.json
-test_file_path = 'dataset/mendaley/mendaley_sentenced_test.json'
+test_file_path = 'datasets/mendaley/mendaley_sentenced_test.json'
 with open(test_file_path, 'r') as f:
     test_data = json.load(f)
 
