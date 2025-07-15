@@ -54,9 +54,9 @@ model.eval()
 
 # Data uji (texts) dan label ground-truth (labels)
 texts = [
-    "polda nusa tenggara barat mengklarifkasi kejadian perkosaan turis perancis gili trawangan lombok",  # BENAR
-    "pt ultrajaya milk industry tbk mengklarifikasi terkait laporan susu ultra kemasan mengandung bakteri sinjai sulawesi selatan",  # BENAR
-    "anies baswedan bantah sudirman said wakil gubernur dki jakarta",  # BENAR
+    "kemenhub klarifikasi kabar pegawai ditahan kebakaran gedung kemenhub",  # BENAR
+    "kemenkeu klarifikasi sri mulyani pakai topi kalimat tauhid",  # BENAR
+    "klarifikasi camat kemalang terkait isu pungli perekrutan perdes tangkil",  # BENAR
     "penangkapan penyusup membawa bom acara pernikahan putri presiden jokowi",  #HOAX
     "polisi israel mencekik anak palestina mati sabtu demonstrasi kedutaan amerika pindah yerusalem",  #HOAX
 ]
