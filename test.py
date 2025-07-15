@@ -102,31 +102,92 @@
 
 #test pake json
 
-import torch
+# import torch
+# import json
+# from transformers import AutoTokenizer, AutoModel
+# from models.finetune import FinetuneV2
+# from sklearn.metrics import accuracy_score, classification_report
+
+# # Load tokenizer dan backbone IndoBERT
+# tokenizer = AutoTokenizer.from_pretrained('indolem/indobert-base-uncased', return_token_type_ids=True, use_fast=False)
+# pretrained_model = AutoModel.from_pretrained('indolem/indobert-base-uncased')
+
+# # Load checkpoint
+# checkpoint_path = '/kaggle/input/model-fake-news/epoch6-step3759.ckpt'
+# model = FinetuneV2.load_from_checkpoint(checkpoint_path, model=pretrained_model)
+# model.eval()
+
+# # Load data uji dari mendaley_sentenced_test.json
+# test_file_path = 'datasets/github/github_sentenced_test.json'
+# with open(test_file_path, 'r') as f:
+#     test_data = json.load(f)
+
+# # Siapkan list untuk teks dan label
+# texts = [item['query'] for item in test_data]
+# labels = [item['label'] for item in test_data]
+
+# # Prediksi
+# predictions = []
+# for text in texts:
+#     encoding = tokenizer(
+#         text,
+#         truncation=True,
+#         padding='max_length',
+#         max_length=128,
+#         return_tensors='pt'
+#     )
+#     with torch.no_grad():
+#         logits = model(
+#             input_ids=encoding['input_ids'],
+#             attention_mask=encoding['attention_mask'],
+#             token_type_ids=encoding.get('token_type_ids', None)
+#         )
+#         if isinstance(logits, tuple):
+#             logits = logits[1]
+#         pred = torch.argmax(logits, dim=1).item()
+#         predictions.append(pred)
+
+# # Evaluasi
+# accuracy = accuracy_score(labels, predictions)
+# report = classification_report(labels, predictions, target_names=["HOAX", "BENAR"])
+
+# # Tampilkan hasil prediksi dan evaluasi
+# label_map = {0: "HOAX", 1: "BENAR"}
+# print("=== Prediction Results (first 10 samples) ===")
+# for i in range(min(10, len(texts))):
+#     print(f"[{label_map[labels[i]]}] {texts[i]}")
+#     print(f"  --> Predicted: {label_map[predictions[i]]}")
+# print("\n=== Evaluation Metrics ===")
+# print(f"Akurasi: {accuracy:.2f}")
+# print(report)
+
+
+
+
 import json
+import torch
 from transformers import AutoTokenizer, AutoModel
 from models.finetune import FinetuneV2
 from sklearn.metrics import accuracy_score, classification_report
 
-# Load tokenizer dan backbone IndoBERT
+# === Load tokenizer dan model backbone ===
 tokenizer = AutoTokenizer.from_pretrained('indolem/indobert-base-uncased', return_token_type_ids=True, use_fast=False)
 pretrained_model = AutoModel.from_pretrained('indolem/indobert-base-uncased')
 
-# Load checkpoint
+# === Load checkpoint ===
 checkpoint_path = '/kaggle/input/model-fake-news/epoch6-step3759.ckpt'
 model = FinetuneV2.load_from_checkpoint(checkpoint_path, model=pretrained_model)
 model.eval()
 
-# Load data uji dari mendaley_sentenced_test.json
-test_file_path = 'datasets/github/github_sentenced_test.json'
-with open(test_file_path, 'r') as f:
-    test_data = json.load(f)
+# === Load data test ===
+test_path = "datasets/github/github_sentenced_test.json"  # Ganti sesuai path di Kaggle
+with open(test_path, "r") as f:
+    data = json.load(f)
 
-# Siapkan list untuk teks dan label
-texts = [item['query'] for item in test_data]
-labels = [item['label'] for item in test_data]
+texts = [item["query"] for item in data]
+labels = [item["label"] for item in data]  # 0 = HOAX, 1 = BENAR
 
-# Prediksi
+# === Predict ===
 predictions = []
 for text in texts:
     encoding = tokenizer(
@@ -142,21 +203,21 @@ for text in texts:
             attention_mask=encoding['attention_mask'],
             token_type_ids=encoding.get('token_type_ids', None)
         )
-        if isinstance(logits, tuple):
-            logits = logits[1]
-        pred = torch.argmax(logits, dim=1).item()
+        logits = torch.squeeze(logits, dim=1)
+        pred = (torch.sigmoid(logits) >= 0.5).int().item()
         predictions.append(pred)
 
-# Evaluasi
+# === Evaluation ===
 accuracy = accuracy_score(labels, predictions)
-report = classification_report(labels, predictions, target_names=["HOAX", "BENAR"])
+report = classification_report(labels, predictions, target_names=["HOAX", "BENAR"], zero_division=0)
 
-# Tampilkan hasil prediksi dan evaluasi
-label_map = {0: "HOAX", 1: "BENAR"}
-print("=== Prediction Results (first 10 samples) ===")
-for i in range(min(10, len(texts))):
-    print(f"[{label_map[labels[i]]}] {texts[i]}")
-    print(f"  --> Predicted: {label_map[predictions[i]]}")
-print("\n=== Evaluation Metrics ===")
+print("=== Evaluation Metrics ===")
 print(f"Akurasi: {accuracy:.2f}")
 print(report)
+
+# === Print 10 contoh prediksi ===
+label_map = {0: "HOAX", 1: "BENAR"}
+print("\n=== Prediction Results (10 contoh) ===")
+for i in range(min(10, len(texts))):
+    print(f"[Label: {label_map[labels[i]]}] {texts[i]}")
+    print(f"  --> Predicted: {label_map[predictions[i]]}")
